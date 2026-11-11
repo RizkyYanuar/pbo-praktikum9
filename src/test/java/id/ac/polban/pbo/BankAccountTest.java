@@ -7,18 +7,39 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.provider.CsvSource;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+
+@DisplayName("Pengujian Bank Account")
 class BankAccountTest {
+    private BankAccount sender;
+    private BankAccount receiver;
+
+    @BeforeAll
+    static void beforeAll() {
+        System.out.println("Semua test dimulai");
+    }
+
+    @BeforeEach
+    void setUp() {
+        sender = new BankAccount("001", "Andi", 100_000);
+        receiver = new BankAccount("002", "Budi", 0);
+    }
 
     @Test
     void deposit_menambahSaldo() {
         // Arrange
-        BankAccount acc = new BankAccount("001", "Andi", 100_000);
-
         // Act
-        acc.deposit(50_000);
+        sender.deposit(50_000);
 
         // Assert
-        assertEquals(150_000, acc.getBalance(), 0.001);
+        assertEquals(150_000, sender.getBalance(), 0.001);
     }
 
     @Test
@@ -32,6 +53,7 @@ class BankAccountTest {
     }
 
     @Test
+    @DisplayName("Penarikan melebihi saldo harus ditolak")
     void withdraw_melebihiSaldo_ditolak() {
         BankAccount acc = new BankAccount("001", "Andi", 100_000);
 
@@ -60,4 +82,34 @@ class BankAccountTest {
                 ex.getMessage());
     }
 
+    @ParameterizedTest(name = "setoran {0} ditolak")
+    @ValueSource(doubles = { 0, -1, -50_000 })
+    void deposit_tidakValid(double amount) {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> sender.deposit(amount));
+    }
+
+    @ParameterizedTest(name = "saldo {0} - tarik {1} = {2}")
+    @CsvSource({
+            "100000, 10000, 90000",
+            "100000, 100000, 0",
+            "50000, 25000.5, 24999.5"
+    })
+    void withdraw_berbagaiNilai(
+            double awal,
+            double tarik,
+            double sisa) throws InsufficientBalanceException {
+
+        BankAccount acc = new BankAccount("009", "Dewi", awal);
+
+        acc.withdraw(tarik);
+
+        assertEquals(sisa, acc.getBalance(), 0.001);
+    }
+
+    @AfterAll
+    static void afterAll() {
+        System.out.println("Semua test selesai");
+    }
 }
