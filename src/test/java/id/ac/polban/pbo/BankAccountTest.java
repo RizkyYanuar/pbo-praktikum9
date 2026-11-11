@@ -119,6 +119,21 @@ class BankAccountTest {
         assertEquals(100_000, sender.getBalance(), 0.001);
     }
 
+    @Test
+    void transfer_keRekeningSendiri_ditolak() {
+
+        BankAccount sender = new BankAccount("001", "Andi", 100_000);
+
+        BankAccount ownAccount = new BankAccount("001", "Andi", 100_000);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> sender.transfer(ownAccount, 20_000));
+
+        assertEquals(100_000, sender.getBalance(), 0.001);
+        assertEquals(100_000, ownAccount.getBalance(), 0.001);
+    }
+
     @AfterAll
     static void afterAll() {
         System.out.println("Semua test selesai");
